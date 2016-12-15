@@ -15,63 +15,49 @@
     ********************************************************************
 */
 
-#include<stdio.h>      //printf
-#include<stdlib.h>
-#include<string.h>     //strlen
-#include<sys/socket.h> //socket
-#include<arpa/inet.h>  //inet_addr
-#include<fcntl.h>     //for open
-#include<unistd.h>    //for close
-#include<ctype.h>
-#include<unistd.h>
+#include "subscriber.h"
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT   27015
 
-int ParseArguments(int argc, char** argv);
+char* ip = NULL;
+int port = 0;
+
 
 int main(int argc , char *argv[])
 {
-    int sock;
-    struct sockaddr_in server;
-    char *message;
-	int messLen = 0;
-	//int i = 0;
-	//int iflag = 0;
-	//int pflag = 0;
-	char *iValue = NULL;
-	char *pValue = NULL;
-	int c;
-
-	/*for(i < 0; i < argc; i++){
-		printf("Argument %d: %s\n", i, argv[i]);
-	} */
+    //int sock;
+    //struct sockaddr_in server;
+    //char *message;
+	//int messLen = 0;
+	int error;
 
 	opterr = 0;
+ 
+	error = ParseArguments(argc, argv);
 
-	while((c = getopt(argc, argv, "i:p:")) != -1) {
-		switch(c) {
-			case 'i':
-				iValue = optarg;
-				optind--;
-				break;
-			case 'p':
-				pValue = optarg;
-				optind--;
-				break;
-		}
+	if(argc > 5){
+		puts("Too Much Arguments");
+		exit(1);
 	}
 
-	puts("IP Address You Entered: ");
-	puts(iValue);
-	fflush(stdout);
-	puts("Desired Port: ");
-	puts(pValue);
-	fflush(stdout);
+	if(error == 0){
+		puts("IP Address You Entered: ");
+		puts(ip);
+		fflush(stdout);
+		printf("Desired Port: %d\n", port);
+		fflush(stdout);
+	} else if(error == -1) {
+		puts("Missing Parameters");
+		exit(1);
+	} else {
+		puts("Invalid Arguments");
+		exit(1);
+	}
 
 
 
-
+	/*
     //Create socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock == -1)
@@ -120,13 +106,50 @@ int main(int argc , char *argv[])
 
 		free(message);
 	}
-    close(sock);
+    close(sock); */
 
     return 0;
 }
 
 int ParseArguments(int argc, char** argv){
 
+	int c;
+	int iFlag;
+	int pFlag;
+	int retVal;
 
-		return 0;
+	retVal = 0;
+	iFlag = 0;
+	pFlag = 0;
+
+	//printf("Argc = %d\n", argc);
+
+	while((c = getopt(argc, argv, "i:p:")) != -1) {
+		switch(c) {
+			case 'i':
+				ip = optarg;
+				optind--;
+				if(strlen(ip) > 7)
+					iFlag = 1;
+				break;
+			case 'p':
+				port = atoi(optarg);
+				optind--;
+				if(port > -1)
+					pFlag = 1;
+				break;
+		}
+	}
+
+	if(iFlag == 0){
+		//puts("-i Flag Is A Must " );
+		retVal = -1;
+	}
+	if(pFlag == 0){
+		//puts("-p Flag Is A Must " );
+		retVal = -1;
+	}
+
+	return retVal;
 }
+
