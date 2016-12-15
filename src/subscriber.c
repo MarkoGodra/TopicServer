@@ -20,11 +20,15 @@
 #include<string.h>     //strlen
 #include<sys/socket.h> //socket
 #include<arpa/inet.h>  //inet_addr
-#include <fcntl.h>     //for open
-#include <unistd.h>    //for close
+#include<fcntl.h>     //for open
+#include<unistd.h>    //for close
+#include<ctype.h>
+#include<unistd.h>
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT   27015
+
+int ParseArguments(int argc, char** argv);
 
 int main(int argc , char *argv[])
 {
@@ -32,6 +36,41 @@ int main(int argc , char *argv[])
     struct sockaddr_in server;
     char *message;
 	int messLen = 0;
+	//int i = 0;
+	//int iflag = 0;
+	//int pflag = 0;
+	char *iValue = NULL;
+	char *pValue = NULL;
+	int c;
+
+	/*for(i < 0; i < argc; i++){
+		printf("Argument %d: %s\n", i, argv[i]);
+	} */
+
+	opterr = 0;
+
+	while((c = getopt(argc, argv, "i:p:")) != -1) {
+		switch(c) {
+			case 'i':
+				iValue = optarg;
+				optind--;
+				break;
+			case 'p':
+				pValue = optarg;
+				optind--;
+				break;
+		}
+	}
+
+	puts("IP Address You Entered: ");
+	puts(iValue);
+	fflush(stdout);
+	puts("Desired Port: ");
+	puts(pValue);
+	fflush(stdout);
+
+
+
 
     //Create socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -84,4 +123,10 @@ int main(int argc , char *argv[])
     close(sock);
 
     return 0;
+}
+
+int ParseArguments(int argc, char** argv){
+
+
+		return 0;
 }
