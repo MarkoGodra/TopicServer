@@ -31,9 +31,9 @@ $(TARGET) : $(OBJ)
 # removes the executable file, as well as old .o object
 # files and *~ backup files:
 clean:
-	@echo "	[RM]    $(OBJ)"
+	@echo " [RM]   $(OBJ)"
 	@$(RM) $(OBJ) *~
-	@echo "	[RM]    $(TARGET) "
+	@echo " [RM]    $(TARGET) "
 	@$(RM) $(OUT_DIR)/$(TARGET) $(OUT_DIR)/*~
 
 .PHONY: clean
