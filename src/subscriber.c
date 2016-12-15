@@ -17,8 +17,8 @@
 
 #include "subscriber.h"
 
-#define DEFAULT_BUFLEN 512
-#define DEFAULT_PORT   27015
+#define DEFAULT_BUFFER_LENGTH 512
+//#define DEFAULT_PORT   27015
 
 char* ip = NULL;
 int port = 0;
@@ -26,12 +26,15 @@ int port = 0;
 
 int main(int argc , char *argv[])
 {
-    //int sock;
-    //struct sockaddr_in server;
-    //char *message;
-	//int messLen = 0;
+    int sock;
+    struct sockaddr_in server;
+    char *message;
+	int messLen;
 	int error;
+	int readSize;
 
+	messLen = 0;
+	readSize = 0;
 	opterr = 0;
  
 	error = ParseArguments(argc, argv);
@@ -55,21 +58,18 @@ int main(int argc , char *argv[])
 		exit(1);
 	}
 
+	
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	if(sock == -1){
+		puts("Could Not Creat Socket\n");
+	}
+	puts("Socket Created");
 
-
-	/*
-    //Create socket
-    sock = socket(AF_INET , SOCK_STREAM , 0);
-    if (sock == -1)
-    {
-        printf("Could not create socket");
-    }
-    puts("Socket created");
-
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server.sin_addr.s_addr = inet_addr(ip);
     server.sin_family = AF_INET;
-    server.sin_port = htons(DEFAULT_PORT);
+    server.sin_port = htons(port);
 
+	
     //Connect to remote server
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
     {
@@ -79,20 +79,22 @@ int main(int argc , char *argv[])
 
     puts("Connected\n");
 	
-	while(1) {
-		puts("Enter a message:");
-		char *c = (char *)malloc(1);
 
-		message = (char *)malloc(1);
-		memset(message, '\0', 1);
-		messLen = 0;
+	puts("Enter a message:");
+	fflush(stdin);
 
-		while( read(0, c, 1) > 0) {
-			if( *c == '\n') break;
-			message = (char *)realloc(message, messLen + 1);
-			messLen++;
-			strcat(message, c);
-		}
+
+	char *c = (char *)malloc(1);
+	message = (char *)malloc(1);
+	memset(message, '\0', 1);
+	messLen = 0;
+
+	while( read(0, c, 1) > 0) {
+		if( *c == '\n') break;
+		message = (char *)realloc(message, messLen + 1);
+		messLen++;
+		strcat(message, c);
+	}
 		
 		//Send some data
 		if( send(sock , message , strlen(message), 0) < 0)
@@ -101,12 +103,21 @@ int main(int argc , char *argv[])
 			return 1;
 		}
 
-		puts("Client message:");
-		puts(message);
+	puts("Client message:");
+	puts(message);
+	fflush(stdin);
+	fflush(stdout);
 
-		free(message);
+	//free(message);
+	memset(message, '\0', strlen(message));
+
+	while((readSize = recv(sock, message, DEFAULT_BUFFER_LENGTH, 0)) > 0){
+		printf("Bytes Recived: %d\n", readSize);
+		message[readSize] = '\0';
+		printf("Server Feedback: %s\n", message);
 	}
-    close(sock); */
+	
+    close(sock);
 
     return 0;
 }
