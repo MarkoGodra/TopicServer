@@ -18,11 +18,9 @@
 #include "subscriber.h"
 
 #define DEFAULT_BUFFER_LENGTH 512
-//#define DEFAULT_PORT   27015
 
 char* ip = NULL;
 int port = 0;
-
 
 int main(int argc , char *argv[])
 {
@@ -31,11 +29,12 @@ int main(int argc , char *argv[])
     char *message;
 	int messLen;
 	int error;
-	int readSize;
+	int* sockPointer;
+	pthread_t listeningHandle;
 
 	messLen = 0;
-	readSize = 0;
 	opterr = 0;
+	sockPointer = &sock;
  
 	error = ParseArguments(argc, argv);
 
@@ -78,48 +77,62 @@ int main(int argc , char *argv[])
     }
 
     puts("Connected\n");
-	
 
-	puts("Enter a message:");
-	fflush(stdin);
+	pthread_create(&listeningHandle, NULL, ListeningRoutine, (void*)sockPointer);	
+
+	while(1){
+			puts("Enter a message:");
+			fflush(stdin);
 
 
-	char *c = (char *)malloc(1);
-	message = (char *)malloc(1);
-	memset(message, '\0', 1);
-	messLen = 0;
+			char *c = (char *)malloc(1);
+			message = (char *)malloc(1);
+			memset(message, '\0', 1);
+			messLen = 0;
 
-	while( read(0, c, 1) > 0) {
-		if( *c == '\n') break;
-		message = (char *)realloc(message, messLen + 1);
-		messLen++;
-		strcat(message, c);
-	}
-		
-		//Send some data
-		if( send(sock , message , strlen(message), 0) < 0)
-		{
-			puts("Send failed");
-			return 1;
-		}
+			while( read(0, c, 1) > 0) {
+				if( *c == '\n') break;
+				message = (char *)realloc(message, messLen + 1);
+				messLen++;
+				strcat(message, c);
+			}
+				
+				//Send some data
+				if( send(sock , message , strlen(message), 0) < 0)
+				{
+					puts("Send failed");
+					return 1;
+				}
 
-	puts("Client message:");
-	puts(message);
-	fflush(stdin);
-	fflush(stdout);
+			puts("Client message:");
+			puts(message);
+			fflush(stdin);
+			fflush(stdout);
 
-	//free(message);
-	memset(message, '\0', strlen(message));
+			memset(message, '\0', strlen(message));
 
-	while((readSize = recv(sock, message, DEFAULT_BUFFER_LENGTH, 0)) > 0){
-		printf("Bytes Recived: %d\n", readSize);
-		message[readSize] = '\0';
-		printf("Server Feedback: %s\n", message);
 	}
 	
     close(sock);
 
     return 0;
+}
+
+void* ListeningRoutine(void* param){
+		
+	int sock;
+	char message[DEFAULT_BUFFER_LENGTH];
+	int readSize;
+   	sock = *(int*)param;
+
+	memset(message, '\0', DEFAULT_BUFFER_LENGTH);
+		
+   	while((readSize = recv(sock, message, DEFAULT_BUFFER_LENGTH, 0)) > 0){
+		printf("Bytes Recived: %d\n", readSize);
+		message[readSize] = '\0';
+		printf("Server Feedback: %s\n", message);
+	}
+	return NULL;	
 }
 
 int ParseArguments(int argc, char** argv){
@@ -133,7 +146,6 @@ int ParseArguments(int argc, char** argv){
 	iFlag = 0;
 	pFlag = 0;
 
-	//printf("Argc = %d\n", argc);
 
 	while((c = getopt(argc, argv, "i:p:")) != -1) {
 		switch(c) {
@@ -153,11 +165,9 @@ int ParseArguments(int argc, char** argv){
 	}
 
 	if(iFlag == 0){
-		//puts("-i Flag Is A Must " );
 		retVal = -1;
 	}
 	if(pFlag == 0){
-		//puts("-p Flag Is A Must " );
 		retVal = -1;
 	}
 
