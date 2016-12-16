@@ -30,8 +30,10 @@ int main(int argc , char *argv[])
 	int messLen;
 	int error;
 	int* sockPointer;
-	pthread_t listeningHandle;
+	int i;
 
+	pthread_t listeningHandle;
+	i = 0;
 	messLen = 0;
 	opterr = 0;
 	sockPointer = &sock;
@@ -81,35 +83,42 @@ int main(int argc , char *argv[])
 	pthread_create(&listeningHandle, NULL, ListeningRoutine, (void*)sockPointer);	
 
 	while(1){
-			puts("Enter a message:");
-			fflush(stdin);
+		puts("Enter a message:");
+		fflush(stdin);
 
 
-			char *c = (char *)malloc(1);
-			message = (char *)malloc(1);
-			memset(message, '\0', 1);
-			messLen = 0;
+		char *c = (char *)malloc(1);
+		message = (char *)malloc(1);
+		memset(message, '\0', 1);
+		messLen = 0;
 
-			while( read(0, c, 1) > 0) {
-				if( *c == '\n') break;
-				message = (char *)realloc(message, messLen + 1);
-				messLen++;
-				strcat(message, c);
-			}
+		while( read(0, c, 1) > 0) {
+			if( *c == '\n') break;
+			message = (char *)realloc(message, messLen + 1);
+			messLen++;
+			strcat(message, c);
+		}
 				
-				//Send some data
-				if( send(sock , message , strlen(message), 0) < 0)
-				{
-					puts("Send failed");
-					return 1;
-				}
+		//Send some data
+		if( send(sock , message , strlen(message), 0) < 0)
+		{
+			puts("Send failed");
+			return 1;
+		}
+			
+		//Conver user's message to lower case
+		for(i = 0; i < strlen(message); i++)
+			message[i] = tolower(message[i]);
 
-			puts("Client message:");
-			puts(message);
-			fflush(stdin);
-			fflush(stdout);
+		if(!strcmp(message,"quit"))
+			break;
 
-			memset(message, '\0', strlen(message));
+		puts("Client message:");
+		puts(message);
+		fflush(stdin);
+		fflush(stdout);
+
+		memset(message, '\0', strlen(message));
 
 	}
 	
