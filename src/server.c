@@ -194,6 +194,7 @@ void* PublishersRoutine(void* param) {
 
 void* SignlePublisherRoutine(void* param) {
     int publisherSock;
+    int readSize;
     char publisherMessage[DEFAULT_BUFLEN];
 
     publisherSock = *(int*)param;
