@@ -9,11 +9,25 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <errno.h>
+#include <glib.h>
 
 #define DEFAULT_BUFLEN 512
+#define DEFAULT_TOPIC_LEN 128
 
-extern int portPublishers;
-extern int portSubscribers;
+typedef struct input_st {
+    char command[15];
+    char topic[DEFAULT_TOPIC_LEN];
+    char text[DEFAULT_BUFLEN];
+} Input;
+
+int portPublishers;
+int portSubscribers;
+
+extern int* pPortPub;
+extern int* pPortSub;
+
+int* pPortPub = &portPublishers;
+int* pPortSub = &portSubscribers;
 
 /*
  * Function for parsing command line arguments.
@@ -47,5 +61,7 @@ void* PublishersRoutine(void* param);
  * void* param - Pointer to publisher socket.
 */
 void* SignlePublisherRoutine(void* param);
+
+int ParseCommand(char* message, Input* input, int flag);
 
 #endif
