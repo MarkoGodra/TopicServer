@@ -10,9 +10,14 @@ OUT_DIR = out
 
 CFLAGS = -Wall -g 
 CFLAGS += -I./$(INC_DIR)
-
+CFLAGS += `pkg-config --cflags glib-2.0`
+#CFLAGS += -I/usr/include/glib-2.0
+#CFLAGS += -I/usr/lib/glib-2.0/include
+ 
 LIBS = -lm
 LIBS += -lpthread
+LIBS += -L/usr/lib
+LIBS += `pkg-config --libs glib-2.0`
 
 FILENAME = server
 

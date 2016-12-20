@@ -21,7 +21,7 @@ clean_publisher:
 clean_server:
 	make clean -f Makefile.server
 
-cleanall:
+clean:
 	make clean -f Makefile.subscriber
 	make clean -f Makefile.publisher
 	make clean -f Makefile.server
