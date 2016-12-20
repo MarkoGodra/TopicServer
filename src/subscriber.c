@@ -45,26 +45,23 @@ int main(int argc , char *argv[])
 		exit(1);
 	}
 
-	if(error == 0){
-		puts("IP Address You Entered: ");
-		puts(ip);
-		fflush(stdout);
-		printf("Desired Port: %d\n", port);
-		fflush(stdout);
-	} else if(error == -1) {
+	//Checking for error in IP input parameters
+	if (error == 0){
+	// All params are ok, because it never enters default in
+	}else if(error == -1) {
 		puts("Missing Parameters");
 		exit(1);
 	} else {
 		puts("Invalid Arguments");
 		exit(1);
 	}
+	fflush(stdout);
 
-	
+	//Creating socket
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if(sock == -1){
 		puts("Could Not Creat Socket\n");
 	}
-	puts("Socket Created");
 
     server.sin_addr.s_addr = inet_addr(ip);
     server.sin_family = AF_INET;
@@ -74,18 +71,19 @@ int main(int argc , char *argv[])
     //Connect to remote server
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
     {
-        perror("connect failed. Error");
+        perror("Connection failed, Error");
         return 1;
     }
 
-    puts("Connected\n");
+    printf("You have successfully connected to: %s : %d \n", ip, port);
+	//Creating Thread for listening routine
+	pthread_create(&listeningHandle, NULL, ListeningRoutine, (void*)sockPointer);
 
-	pthread_create(&listeningHandle, NULL, ListeningRoutine, (void*)sockPointer);	
+	puts("If you want to communicate with the server, type in your message and press enter");
+	fflush(stdout);
 
+	//Message sending routine
 	while(1){
-		puts("Enter a message:");
-		fflush(stdin);
-
 
 		char *c = (char *)malloc(1);
 		message = (char *)malloc(1);
@@ -106,18 +104,17 @@ int main(int argc , char *argv[])
 			return 1;
 		}
 			
-		//Conver user's message to lower case
+		//Convert user's message to upper case
 		for(i = 0; i < strlen(message); i++)
-			message[i] = tolower(message[i]);
+			message[i] = toupper(message[i]);
 
-		if(!strcmp(message,"quit"))
+		if(!strcmp(message,"QUIT"))
 			break;
 
-		puts("Client message:");
-		puts(message);
 		fflush(stdin);
 		fflush(stdout);
-
+		
+		//Reseting message buffer to null terminators, to remove garbage
 		memset(message, '\0', strlen(message));
 
 	}
@@ -133,13 +130,13 @@ void* ListeningRoutine(void* param){
 	char message[DEFAULT_BUFFER_LENGTH];
 	int readSize;
    	sock = *(int*)param;
-
+	
+	//Clearing buffer to avoid server's garbage
 	memset(message, '\0', DEFAULT_BUFFER_LENGTH);
 		
    	while((readSize = recv(sock, message, DEFAULT_BUFFER_LENGTH, 0)) > 0){
-		printf("Bytes Recived: %d\n", readSize);
 		message[readSize] = '\0';
-		printf("Server Feedback: %s\n", message);
+		printf("Server message: %s\n", message);
 	}
 	return NULL;	
 }
