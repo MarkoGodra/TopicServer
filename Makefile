@@ -1,27 +1,19 @@
-subscriber:
-	make -f Makefile.subscriber
+all:
+	make -f Makefile.client
+	make -f Makefile.server
 
-publisher:
-	make -f Makefile.publisher
+client:
+	make -f Makefile.client
 
 server:
 	make -f Makefile.server
 
-all:
-	make -f Makefile.subscriber
-	make -f Makefile.publisher
-	make -f Makefile.server
-
-clean_subscriber:
-	make clean -f Makefile.subscriber
-	
-clean_publisher:
-	make clean -f Makefile.publisher
+clean_client:
+	make clean -f Makefile.client
 
 clean_server:
 	make clean -f Makefile.server
 
 clean:
-	make clean -f Makefile.subscriber
-	make clean -f Makefile.publisher
+	make clean -f Makefile.client
 	make clean -f Makefile.server

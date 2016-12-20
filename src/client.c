@@ -15,7 +15,7 @@
     ********************************************************************
 */
 
-#include "subscriber.h"
+#include "client.h"
 
 #define DEFAULT_BUFFER_LENGTH 512
 
