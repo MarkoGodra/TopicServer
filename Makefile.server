@@ -17,7 +17,7 @@ CFLAGS += `pkg-config --cflags glib-2.0`
 LIBS = -lm
 LIBS += -lpthread
 LIBS += -L/usr/lib
-LBIS += `pkg-config --libs glib-2.0`
+LIBS += `pkg-config --libs glib-2.0`
 
 FILENAME = server
 
