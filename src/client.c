@@ -31,8 +31,8 @@ int main(int argc , char *argv[])
 	int error;
 	int* sockPointer;
 	int i;
-
 	pthread_t listeningHandle;
+	
 	i = 0;
 	messLen = 0;
 	opterr = 0;

@@ -20,14 +20,34 @@
 
 int main(int argc, char** argv) {
 
-    topicsHashMap = g_hash_table_new(g_str_hash, g_str_equal);
+	int error;
 
-    ParseArguments(argc, argv);
+	error = 0;
+
+    topicsHashMap = g_hash_table_new(g_str_hash, g_str_equal);
 
     pthread_t sockets[2];
 
-    *pPortPub = 30000;
-    *pPortSub = 27015;
+	error = ParseArguments(argc, argv);
+
+	if(argc > 5){
+		puts("Too Much Arguments");
+		exit(1);
+	}
+
+	if(error == 0){
+	// All params are ok, because it never enters default
+	} else if (error == -1) {
+		puts("Missing Parameters");
+		exit(1);
+	} else {
+		puts("Invalid Arguments");
+		exit(1);
+	}
+	fflush(stdout);
+
+	printf("Port for publishers: %d\n", *pPortPub);
+	printf("Port for subscribers: %d\n", *pPortSub);
 
     //Creating socket for publishers
     pthread_create(&sockets[0], NULL, PublishersRoutine, (void*)pPortPub);
@@ -43,7 +63,38 @@ int main(int argc, char** argv) {
 
 int ParseArguments(int argc, char** argv) {
 
-    return 0;
+	int c;
+	int pFlag;
+    int sFlag;
+    int retVal;
+
+    retVal = 0;
+	sFlag = 0;
+    pFlag = 0;
+
+    while((c = getopt(argc, argv, "s:p:")) != -1) {
+        switch(c) {
+            case 's':
+                *pPortSub = atoi(optarg);
+                optind--;
+                if(*pPortSub >= 1)
+					sFlag = 1;
+                break;
+            case 'p':
+                *pPortPub = atoi(optarg);
+                optind--;
+                if(*pPortPub >= 1)
+					pFlag = 1;
+                break;
+       }
+	}
+
+	if(pFlag == 0)
+		retVal = -1;
+	if(sFlag == 0)
+		retVal = -1;
+
+	return retVal;
 }
 
 void* SubscribersRoutine(void* param) {
