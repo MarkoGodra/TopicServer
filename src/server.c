@@ -21,14 +21,13 @@
 int main(int argc, char** argv) {
 
 	int error;
+	pthread_t sockets[2];
 
 	error = 0;
 
     topicsHashMap = g_hash_table_new(g_str_hash, g_str_equal);
 
-    pthread_t sockets[2];
-
-	error = ParseArguments(argc, argv);
+   	error = ParseArguments(argc, argv);
 
 	if(argc > 5){
 		puts("Too Much Arguments");
@@ -36,7 +35,7 @@ int main(int argc, char** argv) {
 	}
 
 	if(error == 0){
-	// All params are ok, because it never enters default
+	// All params are ok, needed because it never enters default
 	} else if (error == -1) {
 		puts("Missing Parameters");
 		exit(1);
