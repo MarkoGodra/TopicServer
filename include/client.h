@@ -1,17 +1,16 @@
 #ifndef SUBSCRIBER_H_INCLUDED
 #define SUBSCRIBER_H_INCLUDED
 
+#include <arpa/inet.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <pthread.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <ctype.h>
 #include <unistd.h>
-#include <pthread.h>
-
+#include <unistd.h>
 
 extern char* ip;
 extern int port;
@@ -31,7 +30,7 @@ int ParseArguments(int argc, char** argv);
 /*
  * Thread function for listening.
  * void* param - Passing socket descriptor.
- * */
+ */
 
 void* ListeningRoutine(void* param);
 

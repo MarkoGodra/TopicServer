@@ -3,6 +3,9 @@ TARGET = server
 CC = gcc
 LD = ld
 
+FORMATTER = clang-format-3.8
+FORMATTER_ARGS = -i -style=file
+
 INC_DIR = include
 OBJ_DIR = obj
 SRC_DIR = src
@@ -24,13 +27,17 @@ FILENAME = server
 SRC 	= $(wildcard $(SRC_DIR)/$(FILENAME).c)
 OBJ 	= $(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(SRC:.c=.o))
 
-$(OBJ_DIR)/%.o : $(SRC_DIR)/$(FILENAME).c
+$(OBJ_DIR)/%.o : $(SRC_DIR)/$(FILENAME).c formatsource
 	@echo " [CC]    $<"
 	$(CC) $(CFLAGS) -c  $< -o $@
 
 $(TARGET) : $(OBJ)
 	@echo " [LD]    $@"
 	$(CC) -o $(OUT_DIR)/$@ $^ $(LIBS)
+
+formatsource:
+	$(FORMATTER) $(FORMATTER_ARGS) $(SRC_DIR)/$(FILENAME).c
+	$(FORMATTER) $(FORMATTER_ARGS) $(INC_DIR)/$(FILENAME).h
 
 # To start over from scratch, type 'make clean'.  This
 # removes the executable file, as well as old .o object
@@ -41,4 +48,4 @@ clean:
 	@echo " [RM]    $(TARGET) "
 	@$(RM) $(OUT_DIR)/$(TARGET) $(OUT_DIR)/*~
 
-.PHONY: clean
+.PHONY: clean formatsource

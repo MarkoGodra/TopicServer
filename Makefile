@@ -17,3 +17,7 @@ clean_server:
 clean:
 	make clean -f Makefile.client
 	make clean -f Makefile.server
+
+install:
+	@sudo apt-get install libglib2.0-dev
+	@sudo apt-get install clang-format-3.8
