@@ -19,9 +19,10 @@
 
 
 int main(int argc, char** argv) {
-
+	int i;
 	int error;
-	pthread_t sockets[2];
+	pthread_t socketsT[2];
+	char command[5];
 
 	error = 0;
 
@@ -49,13 +50,25 @@ int main(int argc, char** argv) {
 	printf("Port for subscribers: %d\n", *pPortSub);
 
     //Creating socket for publishers
-    pthread_create(&sockets[0], NULL, PublishersRoutine, (void*)pPortPub);
+    pthread_create(&socketsT[0], NULL, PublishersRoutine, (void*)pPortPub);
 
     //Creating socket for subscribers
-    pthread_create(&sockets[1], NULL, SubscribersRoutine, (void*)pPortSub);
+    pthread_create(&socketsT[1], NULL, SubscribersRoutine, (void*)pPortSub);
 
-    pthread_join(sockets[0], NULL);
-    pthread_join(sockets[1], NULL);
+    pthread_detach(socketsT[0]);
+    pthread_detach(socketsT[1]);
+
+	puts("To shutdown server, type 'quit/QUIT'");
+	fflush(stdout);
+
+	do {
+		scanf("%s", command);
+		fflush(stdout);
+
+		for(i = 0; i < strlen(command); i++) {
+			command[i] = toupper(command[i]);
+		}
+	} while( strcmp(command, "QUIT") != 0);  
 
     return 0;
 }
