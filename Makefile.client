@@ -11,18 +11,18 @@ OBJ_DIR = obj
 SRC_DIR = src
 OUT_DIR = out
 
-CFLAGS = -Wall -g 
+CFLAGS =  -Wall -g 
 CFLAGS += -I./$(INC_DIR)
 
-LIBS = -lm
+LIBS = 	-lm
 LIBS += -lpthread
 
 FILENAME = client
 
-SRC 	= $(wildcard $(SRC_DIR)/$(FILENAME).c)
-OBJ 	= $(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(SRC:.c=.o))
+SRC =  $(SRC_DIR)/$(FILENAME).c
+OBJ = $(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(SRC:.c=.o))
 
-$(OBJ_DIR)/%.o : $(SRC_DIR)/$(FILENAME).c formatsource
+$(OBJ_DIR)/%.o : $(SRC) 
 	@echo " [CC]    $<"
 	$(CC) $(CFLAGS) -c  $< -o $@
 
@@ -30,17 +30,16 @@ $(TARGET) : $(OBJ)
 	@echo " [LD]    $@"
 	$(CC) -o $(OUT_DIR)/$@ $^ $(LIBS)
 
-formatsource:
-	$(FORMATTER) $(FORMATTER_ARGS) $(SRC_DIR)/$(FILENAME).c
-	$(FORMATTER) $(FORMATTER_ARGS) $(INC_DIR)/$(FILENAME).h
-
 # To start over from scratch, type 'make clean'.  This
 # removes the executable file, as well as old .o object
 # files and *~ backup files:
 clean:
 	@echo " [RM]   $(OBJ)"
-	@$(RM) $(OBJ) *~
+	@$(RM) $(OBJ)
 	@echo " [RM]    $(TARGET) "
-	@$(RM) $(OUT_DIR)/$(TARGET) $(OUT_DIR)/*~
+	@$(RM) $(OUT_DIR)/$(TARGET)
+	@$(RM) $(SRC_DIR)/.*~ $(SRC_DIR)/*~
+	@$(RM) $(INC_DIR)/.*~ $(INC_DIR)/*~
+	@$(RM) ./.*~
 
-.PHONY: clean formatsource
+.PHONY: clean

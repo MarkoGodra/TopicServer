@@ -1,23 +1,25 @@
 /*
 	********************************************************************
-	Odsek:          Elektrotehnika i racunarstvo
-	Departman:      Racunarstvo i automatika
-	Katedra:        Racunarska tehnika i racunarske komunikacije (RT-RK)
-	Predmet:        Osnovi Racunarskih Mreza 1
-	Godina studija: Treca (III)
-	Skolska godina: 2016/2017
-	Semestar:       Zimski (V)
+	Faculty of Technical Sciences
+	University of Novi Sad
 
-	Autori:			Marko Dragojevic, Stevan Stevic
+	Department of Computing and Control Engineering
 
-	Ime fajla:      subscriber.c
-	Opis:           Subscriber for topic based TCP/IP server
+	Study Programme:    Computing and Control Engineering, Computer Based
+   Systems (RT-RK)
+	Course:             Fundamentals of Computer Networks 1
+	Year:               3, Semester: Winter
+	School Year:        2016/2017
+
+	Authors:			Marko Dragojevic, Stevan Stevic
+
+	File Name:          client.c
+	Description:        Client that represents publisher nad subscriber for
+   topic based TCP/IP server
 	********************************************************************
 */
 
 #include "client.h"
-
-#define DEFAULT_BUFFER_LENGTH 512
 
 char* ip = NULL;
 int port = 0;
@@ -41,7 +43,7 @@ int main(int argc, char* argv[])
 	error = ParseArguments(argc, argv);
 
 	if (argc > 5) {
-		puts("Too Much Arguments");
+		puts("Too Much Arguments, check the documentation");
 		exit(1);
 	}
 
@@ -49,10 +51,10 @@ int main(int argc, char* argv[])
 	if (error == 0) {
 		// All params are ok, because it never enters default in
 	} else if (error == -1) {
-		puts("Missing Parameters");
+		puts("Missing Parameters, check the documentation");
 		exit(1);
 	} else {
-		puts("Invalid Arguments");
+		puts("Invalid Arguments, check the documentation");
 		exit(1);
 	}
 	fflush(stdout);
@@ -74,6 +76,8 @@ int main(int argc, char* argv[])
 	}
 
 	printf("You have successfully connected to: %s : %d \n", ip, port);
+	fflush(stdout);
+
 	// Creating Thread for listening routine
 	pthread_create(&listeningHandle, NULL, ListeningRoutine,
 				   (void*)sockPointer);
@@ -84,7 +88,6 @@ int main(int argc, char* argv[])
 
 	// Message sending routine
 	while (1) {
-
 		char* c = (char*)malloc(1);
 		message = (char*)malloc(1);
 		memset(message, '\0', 1);
@@ -125,7 +128,6 @@ int main(int argc, char* argv[])
 
 void* ListeningRoutine(void* param)
 {
-
 	int sock;
 	char message[DEFAULT_BUFFER_LENGTH];
 	int readSize;
@@ -138,12 +140,12 @@ void* ListeningRoutine(void* param)
 		message[readSize] = '\0';
 		printf("Server message: %s\n", message);
 	}
+
 	return NULL;
 }
 
 int ParseArguments(int argc, char** argv)
 {
-
 	int c;
 	int iFlag;
 	int pFlag;

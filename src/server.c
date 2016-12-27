@@ -1,17 +1,20 @@
 /*
 	********************************************************************
-	Odsek:          Elektrotehnika i racunarstvo
-	Departman:      Racunarstvo i automatika
-	Katedra:        Racunarska tehnika i racunarske komunikacije (RT-RK)
-	Predmet:        Osnovi Racunarskih Mreza 1
-	Godina studija: Treca (III)
-	Skolska godina: 2016/2017
-	Semestar:       Zimski (V)
+	Faculty of Technical Sciences
+	University of Novi Sad
 
-	Autori:			Marko Dragojevic, Stevan Stevic
+	Department of Computing and Control Engineering
 
-	Ime fajla:      server.c
-	Opis:           Topic Based TCP/IP server
+	Study Programme:    Computing and Control Engineering, Computer Based
+   Systems (RT-RK)
+	Course:             Fundamentals of Computer Networks 1
+	Year:               3, Semester: Winter
+	School Year:        2016/2017
+
+	Authors:			Marko Dragojevic, Stevan Stevic
+
+	File Name:          server.c
+	Description:        Topic Based TCP/IP server
 	********************************************************************
 */
 
@@ -24,30 +27,19 @@ int main(int argc, char** argv)
 	pthread_t socketsT[2];
 	char command[5];
 
-	error = 0;
-
 	topicsHashMap = g_hash_table_new(g_str_hash, g_str_equal);
 
+	// Command line arguments parsing
 	error = ParseArguments(argc, argv);
-
-	if (argc > 5) {
-		puts("Too Much Arguments");
-		exit(1);
+	if (error != 0) {
+		puts("Invalid parametars, check the documentation!");
+		printf("Error code: %d\n", error);
+		exit(EXIT_FAILURE);
 	}
-
-	if (error == 0) {
-		// All params are ok, needed because it never enters default
-	} else if (error == -1) {
-		puts("Missing Parameters");
-		exit(1);
-	} else {
-		puts("Invalid Arguments");
-		exit(1);
-	}
-	fflush(stdout);
 
 	printf("Port for publishers: %d\n", *pPortPub);
 	printf("Port for subscribers: %d\n", *pPortSub);
+	fflush(stdout);
 
 	// Creating socket for publishers
 	pthread_create(&socketsT[0], NULL, PublishersRoutine, (void*)pPortPub);
@@ -58,7 +50,7 @@ int main(int argc, char** argv)
 	pthread_detach(socketsT[0]);
 	pthread_detach(socketsT[1]);
 
-	puts("To shutdown server, type 'quit/QUIT'");
+	puts("To shutdown server type: quit/QUIT");
 	fflush(stdout);
 
 	do {
@@ -75,37 +67,40 @@ int main(int argc, char** argv)
 
 int ParseArguments(int argc, char** argv)
 {
-
 	int c;
-	int pFlag;
-	int sFlag;
 	int retVal;
 
 	retVal = 0;
-	sFlag = 0;
-	pFlag = 0;
 
-	while ((c = getopt(argc, argv, "s:p:")) != -1) {
-		switch (c) {
-		case 's':
-			*pPortSub = atoi(optarg);
-			optind--;
-			if (*pPortSub >= 1)
-				sFlag = 1;
-			break;
-		case 'p':
-			*pPortPub = atoi(optarg);
-			optind--;
-			if (*pPortPub >= 1)
-				pFlag = 1;
-			break;
+	if (argc != 5) {
+		retVal = 1;
+	} else {
+		while ((c = getopt(argc, argv, "s:p:")) != -1) {
+			switch (c) {
+			case 's':
+				if ((*pPortSub = atoi(optarg)) != 0) {
+					optind--;
+				} else {
+					retVal = 2;
+				}
+				break;
+			case 'p':
+				if ((*pPortPub = atoi(optarg)) != 0) {
+					optind--;
+				} else {
+					retVal = 2;
+				}
+				break;
+			default:
+				retVal = 3; // Invalid parametars
+				break;
+			}
+		}
+
+		if (*pPortSub < 1 || *pPortPub < 1) {
+			retVal = 2;
 		}
 	}
-
-	if (pFlag == 0)
-		retVal = -1;
-	if (sFlag == 0)
-		retVal = -1;
 
 	return retVal;
 }
@@ -152,22 +147,25 @@ void* SubscribersRoutine(void* param)
 	while ((subscriberSock = accept(socketDesc, (struct sockaddr*)&subscriber,
 									(socklen_t*)&size))) {
 		if (subscriberSock < 0) {
-			fprintf(stderr, "Accept for subscriber connectin failed: %s\n",
-					strerror(errno));
+			fprintf(stderr, "Connection from %s : %d subscriber failed: %s\n",
+					inet_ntoa(subscriber.sin_addr),
+					(int)ntohs(subscriber.sin_port), strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 
 		pthread_t subscriberT;
 
-		int* newSock = (int*)malloc(sizeof(int));
+		int* newSock;
+		newSock = (int*)malloc(sizeof(int));
 		*newSock = subscriberSock;
 
 		pthread_create(&subscriberT, NULL, SignleSubscriberRoutine,
 					   (void*)newSock);
 		pthread_detach(subscriberT);
 
-		printf("New connection from: %s : %d as a SUBSCRIBER\n",
-			   inet_ntoa(subscriber.sin_addr), (int)ntohs(subscriber.sin_port));
+		printf("New connection from: %s : %d as a SUBSCRIBER, ID = %d\n",
+			   inet_ntoa(subscriber.sin_addr), (int)ntohs(subscriber.sin_port),
+			   subscriberSock);
 		fflush(stdout);
 	}
 
@@ -190,10 +188,7 @@ void* SignleSubscriberRoutine(void* param)
 
 	while ((readSize = recv(subscriberSock, subscriberMessage, DEFAULT_BUFLEN,
 							0)) > 0) {
-		// printf("Bytes received: %d\n", readSize);
 		*(subscriberMessage + readSize) = '\0';
-		// printf("Messagee: %s\n", subscriberMessage);
-		// fflush(stdout);*/
 
 		ParseInput(subscriberMessage, &subInput, 0);
 
@@ -203,15 +198,20 @@ void* SignleSubscriberRoutine(void* param)
 								 (GHFunc)RemovingSubFromAllTopics,
 								 (gpointer)pSub);
 
-			serverMessage = "Thank you for using our service, see ya soon!!!";
+			serverMessage = "You are successfully disconnected. Come again!!!";
 			if ((send(subscriberSock, serverMessage, strlen(serverMessage),
 					  0)) < 0) {
-				fprintf(stderr, "Send of '%s' message failed: %s\n",
-						serverMessage, strerror(errno));
+				fprintf(stderr, "Sending %s message to ID = %d failed: %s\n",
+						serverMessage, subscriberSock, strerror(errno));
 			}
+
+			printf("Subscriber with ID = %d has disconnected\n",
+				   subscriberSock);
+			fflush(stdout);
 
 			// Close connection
 			close(subscriberSock);
+
 			break;
 		} else if (strcmp(subInput.command, "SUBSCRIBE") == 0) {
 			GSList* listT = NULL;
@@ -220,7 +220,7 @@ void* SignleSubscriberRoutine(void* param)
 			if (g_hash_table_lookup_extended(topicsHashMap, subInput.topic,
 											 NULL, (gpointer*)&listT) == 0) {
 				// Key not in a map
-				serverMessage = "Specifed topic is not active, or it dosen't "
+				serverMessage = "Specifed topic is not active, or it does'nt "
 								"exist. Check your spelling, or try later!";
 			} else {
 				// If topic exists add new subscriber to list
@@ -240,8 +240,8 @@ void* SignleSubscriberRoutine(void* param)
 				}
 			}
 		} else if (strcmp(subInput.command, "UNSUBSCRIBE") == 0) {
-			// Remove from list or error msg if topic isn't existing or he is
-			// not subed
+			// Remove from list or send error messag if topic isn't existing or
+			// he is not subscribed
 			GSList* listT = NULL;
 			if (g_hash_table_lookup_extended(topicsHashMap, subInput.topic,
 											 NULL, (gpointer*)&listT) == 0) {
@@ -253,7 +253,7 @@ void* SignleSubscriberRoutine(void* param)
 
 				g_hash_table_insert(topicsHashMap, subInput.topic, listT);
 
-				serverMessage = "You were sussccesfully unsubscribed!";
+				serverMessage = "You are sussccesfully unsubscribed!";
 			}
 		} else {
 			serverMessage = "Command you entered is not recognized! Check your "
@@ -262,8 +262,9 @@ void* SignleSubscriberRoutine(void* param)
 
 		if ((send(subscriberSock, serverMessage, strlen(serverMessage), 0)) <
 			0) {
-			fprintf(stderr, "Sending '%s' message failed: %s\n", serverMessage,
-					strerror(errno));
+			fprintf(stderr,
+					"Sending %s message to subscriber ID = %d failed: %s\n",
+					serverMessage, subscriberSock, strerror(errno));
 		}
 	}
 
@@ -284,7 +285,7 @@ void* PublishersRoutine(void* param)
 	// Create socket for publishers
 	socketDesc = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketDesc == -1) {
-		fprintf(stderr, "Creating socket for publishers failed:: %s\n",
+		fprintf(stderr, "Creating socket for publishers failed: %s\n",
 				strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -311,22 +312,25 @@ void* PublishersRoutine(void* param)
 	while ((publisherSock = accept(socketDesc, (struct sockaddr*)&publisher,
 								   (socklen_t*)&size))) {
 		if (publisherSock < 0) {
-			fprintf(stderr, "Accept for publisher connectin failed: %s\n",
-					strerror(errno));
+			fprintf(stderr, "Connection from %s : %d publisher failed: %s\n",
+					inet_ntoa(publisher.sin_addr),
+					(int)ntohs(publisher.sin_port), strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 
 		pthread_t publisherT;
 
-		int* newSock = (int*)malloc(sizeof(int));
+		int* newSock;
+		newSock = (int*)malloc(sizeof(int));
 		*newSock = publisherSock;
 
 		pthread_create(&publisherT, NULL, SignlePublisherRoutine,
 					   (void*)newSock);
 		pthread_detach(publisherT);
 
-		printf("New connection from: %s : %d as a PUBLISHER\n",
-			   inet_ntoa(publisher.sin_addr), (int)ntohs(publisher.sin_port));
+		printf("New connection from: %s : %d as a PUBLISHER, ID = %d\n",
+			   inet_ntoa(publisher.sin_addr), (int)ntohs(publisher.sin_port),
+			   publisherSock);
 		fflush(stdout);
 	}
 
@@ -347,10 +351,7 @@ void* SignlePublisherRoutine(void* param)
 
 	while ((readSize =
 				recv(publisherSock, publisherMessage, DEFAULT_BUFLEN, 0)) > 0) {
-		// printf("Bytes received: %d\n", readSize);
 		*(publisherMessage + readSize) = '\0';
-		// printf("Messagee: %s\n", publisherMessage);
-		// fflush(stdout);
 
 		ParseInput(publisherMessage, &pubInput, 1); // Flag for publisher
 
@@ -359,9 +360,10 @@ void* SignlePublisherRoutine(void* param)
 
 			if (g_hash_table_lookup_extended(topicsHashMap, pubInput.topic,
 											 NULL, (gpointer*)&listT) == 0) {
-				serverMessage = "Thank you for providing information for us, "
-								"see ya soon!!!";
+				serverMessage = "You are successfully disconnected. Thank you "
+								"for providing information for us!";
 			} else {
+				// Topic exists!
 				// Iterate through list to notify everyone that publisher is
 				// gone
 				g_slist_foreach(listT, (GFunc)NotifySubsForLeaving,
@@ -369,22 +371,27 @@ void* SignlePublisherRoutine(void* param)
 
 				// Remove list for this topic and topic from hash map
 				g_slist_free(listT);
+
+				// Remove topic
 				if (g_hash_table_remove(topicsHashMap, pubInput.topic) == 0) {
 					fprintf(stderr, "Removing %s topic failed: %s\n",
 							pubInput.topic, strerror(errno));
-					// IS THIS NECESSARY, OR I CAN HANDLE SOMETHING????
-					exit(EXIT_FAILURE);
 				}
 
-				serverMessage = "Thank you for providing information for us, "
-								"see ya soon!!!";
+				serverMessage = "You are successfully disconnected. Thank you "
+								"for providing information for us!";
 			}
 
 			if ((send(publisherSock, serverMessage, strlen(serverMessage), 0)) <
 				0) {
-				fprintf(stderr, "Send of '%s' message failed: %s\n",
-						serverMessage, strerror(errno));
+				fprintf(
+					stderr,
+					"Sending '%s' message to publisher ID = %d failed: %s\n",
+					serverMessage, publisherSock, strerror(errno));
 			}
+
+			printf("Publisher ID = %d has disconnected\n", publisherSock);
+			fflush(stdout);
 
 			close(publisherSock);
 			break;
@@ -393,6 +400,7 @@ void* SignlePublisherRoutine(void* param)
 
 			if (g_hash_table_lookup_extended(topicsHashMap, pubInput.topic,
 											 NULL, (gpointer*)&listT) == 0) {
+
 				// Add topic(key) to hash map with the value of NULL(listT)
 				g_hash_table_insert(topicsHashMap, pubInput.topic, listT);
 
@@ -402,7 +410,7 @@ void* SignlePublisherRoutine(void* param)
 				strcat(msg, "!");
 				serverMessage = msg;
 			} else {
-				// Send data to everyone subscribed to the topic
+				// Send data to everyone subscribed to this topic
 				Input* pInput = &pubInput;
 
 				if (listT != NULL) {
@@ -410,7 +418,7 @@ void* SignlePublisherRoutine(void* param)
 									(gpointer)pInput);
 				}
 
-				serverMessage = "Keep doing a good job, and keep us updated!";
+				serverMessage = "You published successfully!";
 			}
 		} else {
 			serverMessage = "Command you entered is not recognized! Check your "
@@ -442,14 +450,24 @@ void ParseInput(char* message, Input* input, int flag)
 
 	input->command[i] = '\0';
 
+	// Only working with big letters, giving case insesitive option to clients
+	for (i = 0; i < strlen(input->command); i++) {
+		input->command[i] = toupper(input->command[i]);
+	}
+
 	// If command is quit stop parsing to avoid SEGFAULT or similar
 	if (strcmp(input->command, "QUIT") == 0) {
 		input->text[0] = '\0';
 
-		// If pub enters quit, topic is erased and can't find key in hash map,
-		// levaing memory
-		// If topic is != '\0' it means quit isn't called right after connection
-		// By doing this topic is saved
+		/* If publisher enters quit, topic needs to be erased, but if he didn't
+		 * publish anything (entered quit right after connecting) key is not in
+		 * the hash map.
+		 * This leads to SEGFALUTS. It is solved by checking first topic's
+		 * character.
+		 * If topic[0] is != '\0' it means quit isn't typed right after
+		 * connection and it has previous value.
+		 * By doing this topic is saved for other publishers
+		 */
 		if (flag && input->topic[0] != '\0')
 			return;
 
@@ -466,7 +484,11 @@ void ParseInput(char* message, Input* input, int flag)
 
 	input->topic[i] = '\0';
 
-	if (flag == 0) { // It is subsriber and further parsing is not neccessary
+	for (i = 0; i < strlen(input->topic); i++) {
+		input->topic[i] = toupper(input->topic[i]);
+	}
+
+	if (flag == 0) { // It is subscriber and further parsing is not neccessary
 		input->text[0] = '\0';
 		return;
 	}
@@ -486,14 +508,16 @@ void SendDataToSubs(gpointer data, gpointer inp)
 {
 	int subSock = *(int*)data;
 	Input input = *(Input*)inp;
+
 	char sendStr[DEFAULT_BUFLEN] = "[";
 	strcat(sendStr, input.topic);
 	strcat(sendStr, "] ");
 	strcat(sendStr, input.text);
 
 	if ((send(subSock, sendStr, strlen(sendStr), 0)) < 0) {
-		fprintf(stderr, "Sending %s message to %d failed: %s\n", sendStr,
-				subSock, strerror(errno));
+		fprintf(stderr, "Sending %s message about successfull subscription to "
+						"ID = %d failed: %s\n",
+				sendStr, subSock, strerror(errno));
 	}
 }
 
@@ -510,12 +534,14 @@ void NotifySubsForLeaving(gpointer data, gpointer top)
 {
 	int subSock = *(int*)data;
 	char* topic = (char*)top;
+
 	char sendStr[DEFAULT_BUFLEN] = "Publisher for [";
 	strcat(sendStr, topic);
-	strcat(sendStr, "] topic has disconnected!");
+	strcat(sendStr, "] topic is disconnected!");
 
 	if ((send(subSock, sendStr, strlen(sendStr), 0)) < 0) {
-		fprintf(stderr, "Sending %s message to %d failed: %s\n", sendStr,
-				subSock, strerror(errno));
+		fprintf(stderr, "Sending %s message about disconnected publisher to "
+						"subscriber ID = %d failed: %s\n",
+				sendStr, subSock, strerror(errno));
 	}
 }
