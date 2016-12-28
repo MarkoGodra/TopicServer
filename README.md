@@ -11,7 +11,7 @@ This server forwards publishers messages for given topic to subscribed clients. 
 
 ###Starting the server
 
-Server listens for connections bouth from subscribers and from publishers. It _distinguishes_ subscribers from publisher _over the port_ they used to connect to server. That being said, ports **need to be provided** to server when starting it, because there are no default ports. This is done using -s and -p flag for subscribers, publishers respectively. If you don't provide right flags you will see error codes:  
+Server listens for connections both from subscribers and from publishers. It _distinguishes_ subscribers from publisher _over the port_ they used to connect to server. That being said, ports **need to be provided** to server when starting it, because there are no default ports. This is done using -s and -p flag for subscribers, publishers respectively. If you don't provide right flags you will see error codes:  
 * 1 - Number of arguments is not valid.
 * 2 - Flags are not correctly set.
 * 3 - Invalid flag is used.
@@ -36,12 +36,46 @@ This is the output for this example, when started:
 Server is not interactive, except when command quit/QUIT is entered. It only provides information on new connections or when someone disconnects.  
 Command quit/QUIT is self-explanatory and tells the server to go down.
 
+####Starting the Subscriber
+Subscriber is used when you want to recive info about certain topic. Info is provided by publishers.  
+To start subscriber you use **client** executive, because it is adjusted to be used by both subscriber and publisher.  
+You have to provide server's port number on which you want to connect. You decide which, based on your intentions - do you want to be susbcriber or publisher. This is done using -p flag.  
+Also you need server's ip. This is done using -i flag.
+
+Here is an example of starting the server from the top directory, and connecting to you local host:  
+>./out/server -p 27015 -i 127.0.0.1
+
+Client will try to connect to this address and port, if successful you'll get following output:
+>You have successfully connected to: 127.0.0.1 : 27015  
+>If you want to communicate with the server, type in your message and press enter 
+
+####Subscriber usage
+Subscriber has 3 commands:
+* Subscribe  
+	This command will subscribe you to specifed topic, so you could do that like this:  
+	>SUBSCRIBE FOOD
+
+	If topic dosen't exist you will get this message:  
+	>Specifed topic is not active, or it does'nt exist. Check your spelling, or try later!
+
+	Else you will recive following message:  
+	>You will publish information for topic: FOOD!
+* Unsubscribe
+	This command will unsubscribe tou from specifed topic, example:  
+	>UNSUBSCRIBE FOOD
+
+	If successful this is the message:  
+	>You are sussccesfully unsubscribed! 
+* Quit
+	This will get you off the server and quit program.
+
+They are all case insensitive.
 ####Starting the 
 
 ## Contributing
 
 For now, only one publisher should publish news, because every time one disconnects, list of subscribers for that topic is erased and the topic is removed from the hash map. If two publishers provide info for the same topic, and one disconnects, list of subscribers is erased and topic removed although second is still active.  
-This happens because topics are not connected to publishers ip's. One of the ways to this is to implement another hashmap that also connects topics for list of publishers and keeps topics active as long as that list is not empty.  
+This happens because topics are not connected to publishers ip's. One of the ways to solve this is to implement another hashmap that also connects topics for list of publishers and keeps topics active as long as that list is not empty.  
 This could be patched.
 
 ## Help
@@ -78,7 +112,7 @@ Now, you need to install applications and programs from **Requirements** section
 
 to install and compile programs.
 
-That's it now you are ready!
+That's it. Now you are ready!
 
 ### Configuration
 
@@ -90,7 +124,7 @@ Project atuhors are:
 * Marko Dragojevic
 * Stevan Stevic
 
-It is done as part of out final exam for Fundamentals of _Computer Networks 1_ course.
+It is done as part of our final exam for _Fundamentals of Computer Networks 1_ course.
 
 ## License
 
