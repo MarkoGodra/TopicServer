@@ -60,12 +60,14 @@ Subscriber has 3 commands:
 
 	Else you will recive following message:  
 	>You will publish information for topic: FOOD!
+
 * **Unsubscribe**  
 	This command will unsubscribe tou from specifed topic, example:  
 	>UNSUBSCRIBE FOOD
 
 	If successful this is the message:  
 	>You are sussccesfully unsubscribed! 
+
 * **Quit**  
 	This will get you off the server and quit program.
 
@@ -84,6 +86,12 @@ Publisher has 2 commands:
 	This will quit and remove topic from hash map.
 
 They are all case insensitive.
+
+* Quit
+	This will get you off the server and quit program.
+
+They are all case insensitive.
+
 
 ## Contributing
 
