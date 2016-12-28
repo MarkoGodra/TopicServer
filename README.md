@@ -87,12 +87,6 @@ Publisher has 2 commands:
 
 They are all case insensitive.
 
-* Quit
-	This will get you off the server and quit program.
-
-They are all case insensitive.
-
-
 ## Contributing
 
 For now, only one publisher should publish news, because every time one disconnects, list of subscribers for that topic is erased and the topic is removed from the hash map. If two publishers provide info for the same topic, and one disconnects, list of subscribers is erased and topic removed although second is still active.  
