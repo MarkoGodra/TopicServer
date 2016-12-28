@@ -24,7 +24,7 @@ clean:
 install:
 	@sudo apt-get install libglib2.0-dev
 	@sudo apt-get install clang-format-3.8
-	@sudo apt-get install clang-format-3.7
+	@sudo apt-get install gcc 
 
 formatsource:
 	$(FORMATTER) $(FORMATTER_ARGS) src/*.c
